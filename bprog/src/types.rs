@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::{Add, Div, Mul, Not, Sub}};
+use std::{fmt::Display, ops::{Add, Div, Mul, Not, Sub}, string};
 
 use crate::operations::{self, arithmetic, io, logic};
 use crate::stack::Stack;
@@ -43,6 +43,55 @@ impl Value {
         }
     }
 
+    pub fn head(value: &Value) -> Result<Value, String> {
+        let result = match value {
+            Value::List(list) if !list.is_empty() => Ok(list[0].clone()),
+            Value::String(string) if !string.is_empty() => Ok(Value::String(string.chars().nth(0).unwrap().to_string())),
+            Value::String(_) => Err(format!("Empty string")),
+            Value::List(_) => Err(format!("Empty list")),
+            _ => return Err(format!("Invalid operation")),
+        };
+        result
+    }
+
+    pub fn tail(value: &Value) -> Result<Value, String> {
+        match value {
+            Value::List(list) if !list.is_empty() => return Ok(Value::List(list[1..].to_vec())),
+            Value::String(string) if !string.is_empty() => return Ok(Value::String(string.chars().skip(1).collect())),
+            Value::String(_) => return Err(format!("Empty string")),
+            Value::List(_) => return Err(format!("Empty list")),
+            _ => return Err(format!("Invalid operation")),
+        };
+    }
+
+    pub fn empty(value: &Value) -> Result<Value, String> {
+        let result = match value {
+            Value::List(list ) => Ok(Value::Boolean(list.is_empty())),
+            Value::String(string) => Ok(Value::Boolean(string.is_empty())),
+            _ => Err(format!("Invalid operation")),
+        };
+        result
+    }
+
+    pub fn lenght(value: &Value) -> Result<Value, String> {
+        let result = match value {
+            Value::List(list) => Ok(Value::Int(list.len() as i64)),
+            Value::String(string) => Ok(Value::Int(string.chars().count() as i64)),
+            _ => Err(format!("Invalid operation")),
+        };
+        result
+    }
+
+    pub fn cons(list: &mut Vec<Value>, value: Value) -> Result<(), String> {
+        list.insert(0,value);
+        Ok(())
+    }
+
+    pub fn append(list1: &mut Vec<Value>, list2: Vec<Value>) -> Result<(), String> {
+        list1.extend(list2);
+        Ok(())
+    }
+
     pub fn words(stack: &mut Stack) -> Result<(), String> {
         let input = stack.pop().unwrap();
         let mut words = Vec::new();
@@ -59,36 +108,37 @@ impl Value {
         Ok(())
     }
 
-    pub fn exec(&self) -> Result<Self, String> {
+
+
+    pub fn exec(&self, stack: &mut Stack) -> Result<(), String> {
         match self {
             Value::Block(b) => {
-                let mut stack = Stack::new();
                 let mut tokens = b.iter();
                 while let Some(token) = tokens.next() {
                     match token.as_str() {
                         "+" => {
-                            arithmetic::add(&mut stack)?;
+                            arithmetic::add(stack)?;
                         },
                         "-" => {
-                            arithmetic::sub(&mut stack)?;
+                            arithmetic::sub(stack)?;
                         },
                         "*" => {
-                            arithmetic::mul(&mut stack)?;
+                            arithmetic::mul(stack)?;
                         },
                         "/" => {
-                            arithmetic::div(&mut stack)?;
+                            arithmetic::div(stack)?;
                         },
                         "div" => {
-                            arithmetic::int_div(&mut stack)?;
+                            arithmetic::int_div(stack)?;
                         },
                         "<" => {
-                            arithmetic::lt(&mut stack)?;
+                            arithmetic::lt(stack)?;
                         },
                         ">" => {
-                            arithmetic::gt(&mut stack)?;
+                            arithmetic::gt(stack)?;
                         },
                         "==" => {
-                            arithmetic::eq(&mut stack)?;
+                            arithmetic::eq(stack)?;
                         },
                         "dup" => {
                             stack.dup()?;
@@ -100,13 +150,13 @@ impl Value {
                             stack.pop()?;
                         },
                         "words" => {
-                            Self::words(&mut stack)?;
+                            Self::words(stack)?;
                         },
                         "print" => {
-                            io::print(&mut stack)?;
+                            io::print(stack)?;
                         },
                         "read" => {
-                            io::read(&mut stack)?;
+                            io::read(stack)?;
                         },
                         "parseInteger" => {
                             let input = stack.pop().unwrap();
@@ -119,13 +169,13 @@ impl Value {
                             stack.push(input);
                         },
                         "&&" => {
-                            logic::and(&mut stack)?;
+                            logic::and(stack)?;
                         },
                         "||" => {
-                            logic::or(&mut stack)?;
+                            logic::or(stack)?;
                         }
                         "not" => {
-                            logic::not(&mut stack)?;
+                            logic::not(stack)?;
                         },
                         "[" => {
                             let input = operations::flow::read_list(&mut tokens)?;
@@ -139,20 +189,102 @@ impl Value {
                             let input = operations::flow::read_string(&mut tokens);
                             stack.push(input);
                         },
+                        "head" => {
+                            operations::lists::head(stack)?;
+                        },
+                        "tail" => {
+                            operations::lists::tail(stack)?;
+                        },
+                        "empty" => {
+                            operations::lists::empty(stack)?;
+                        },
+                        "length" => {                            
+                            operations::lists::lenght(stack)?;
+                        },
+                        "cons" => {
+                            operations::lists::cons(stack)?;
+                        },
+                        "append" => {
+                            operations::lists::append(stack)?;
+                        },
+                        "if" => {
+                            operations::flow::if_block(&mut tokens, stack)?;
+                        },
+                        "println" => {
+                            io::println(stack)?;
+                        },
+                        "each" => {
+                            operations::lists::each(&mut tokens, stack)?;
+                        },
+                        "map" => {
+                            operations::lists::map(&mut tokens, stack)?;
+                        },
+                        "foldl" => {
+                            operations::lists::foldl(&mut tokens, stack)?;
+                        },
+                        "loop" => {
+                            operations::flow::r#loop(&mut tokens, stack)?;
+                        },
+                        "times" => {
+                            operations::flow::times(&mut tokens, stack)?;
+                        },
                         _ => {
                             stack.push(convert(token));
                         }
                     }
                 }
-                if stack.len() == 1 {
-                    Ok(stack.pop()?)
-                } else {
-                    panic!("Invalid stack size")
-                }
+                Ok(())
             }
             _ => Err(format!("Invalid operation")),
         }
     }
+
+    pub fn each(self, stack: &mut Stack, block: Self) -> Result<(), String> {
+        match (self, &block) {
+            (Value::List(list), Value::Block(_)) => {
+                for item in list {
+                    stack.push(item.clone());
+                    block.exec(stack)?;
+                }
+                Ok(())
+            },
+            _ => Err(format!("Invalid operation")),
+        }
+    }
+
+    pub fn map(self, stack: &mut Stack, block: Self) -> Result<(), String> {
+        match (self, &block) {
+            (Value::List(list), Value::Block(_)) => {
+                let mut result = Vec::new();
+                for item in list {
+                    stack.push(item.clone());
+                    block.exec(stack).unwrap();
+                    result.push(stack.pop().unwrap());
+                }
+                stack.push(Value::List(result));
+                Ok(())
+            },
+            _ => Err(format!("Invalid operation")),
+        }
+    }
+
+    pub fn foldl(self, stack: &mut Stack, block: Self, start_value: Self) -> Result<(), String> {
+        match (self, &block) {
+            (Value::List(list), Value::Block(_)) => {
+                let mut result = start_value;
+                for item in list {
+                    stack.push(result.clone());
+                    stack.push(item.clone());
+                    block.exec(stack).unwrap();
+                    result = stack.pop().unwrap();
+                }
+                stack.push(result);
+                Ok(())
+            },
+            _ => Err(format!("Invalid operation")),
+        }
+    }
+
 }
 
 impl From<i64> for Value {
@@ -263,7 +395,6 @@ impl Sub for Value {
 
 impl Mul for Value {
     type Output = Result<Value, String>;
-
     fn mul(self, other: Self) -> Self::Output {
         match (self, other) {
             (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a * b)),
@@ -303,6 +434,7 @@ impl PartialEq for Value {
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             (Value::Int(a), Value::Int(b)) => a == b,
+            (Value::List(a), Value::List(b)) => a == b,
             _ => false,
         }
     }
@@ -315,6 +447,7 @@ impl PartialOrd for Value {
             (Value::Float(a), Value::Float(b)) => a.partial_cmp(b),
             (Value::String(a), Value::String(b)) => a.partial_cmp(b),
             (Value::Boolean(a), Value::Boolean(b)) => a.partial_cmp(b),
+            (Value::List(a), Value::List(b)) => a.partial_cmp(b),
             _ => None,
         }
     }

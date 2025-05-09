@@ -4,6 +4,12 @@ use crate::{types::Value, stack::Stack};
 
 pub fn print(stack: &mut Stack) -> Result<(), String> {
     let value = stack.pop().unwrap();
+    print!("{}", value);
+    Ok(())
+}
+
+pub fn println(stack: &mut Stack) -> Result<(), String> {
+    let value = stack.pop().unwrap();
     println!("{}", value);
     Ok(())
 }

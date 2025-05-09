@@ -14,10 +14,6 @@ impl Stack {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.stack.len()
-    }
-
     pub fn push(&mut self, value: Value) {
         self.stack.push(value);
     }

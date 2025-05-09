@@ -1,1 +1,1 @@
-{ 1 } print
+1 loop { dup 4 > } { dup 1 + } [ ] 5 times   cons  println
