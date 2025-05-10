@@ -1,4 +1,4 @@
-use crate::{stack, types::{convert, Value}};
+use crate::{stack, types::{convert, Value}, variables};
 
 pub fn read_string<'a, I>(iter: &mut I) -> Value
 where
@@ -70,7 +70,7 @@ where
 }
 
 
-pub fn if_block<'a, I>(iter: &mut I, stack: &mut stack::Stack) -> Result<(), String>
+pub fn if_block<'a, I>(iter: &mut I, stack: &mut stack::Stack, variables: &mut variables::Variables) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -98,11 +98,11 @@ where
     };
 
     let block_to_run = if condition { block_true } else { block_false };
-    block_to_run.exec(stack).unwrap();
+    block_to_run.exec(stack, variables).unwrap();
     Ok(())
 }
 
-pub fn times<'a, I>(iter: &mut I, stack: &mut stack::Stack) -> Result<(), String>
+pub fn times<'a, I>(iter: &mut I, stack: &mut stack::Stack, variables: &mut variables::Variables) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -119,17 +119,19 @@ where
             _ => return Err(format!("Invalid syntax not an integer")),
         };
         loop {
-            block.exec(stack).unwrap();
+            block.exec(stack, variables).unwrap();
             times -= 1;
             if times == 0 {
                 break;
             }
         }
+    } else {
+        return Err(format!("Invalid syntax"));
     }
     Ok(())
 }
 
-pub fn r#loop<'a, I>(iter: &mut I, stack: &mut stack::Stack) -> Result<(), String>
+pub fn r#loop<'a, I>(iter: &mut I, stack: &mut stack::Stack, variables: &mut variables::Variables) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -154,14 +156,26 @@ where
         return Err(format!("Invalid syntax"));
     }
     loop {
-        check.exec(stack).unwrap();
+        check.exec(stack, variables).unwrap();
         match stack.pop().unwrap() {
             Value::Boolean(true) => { break },
             Value::Boolean(false) => {
-                block.exec(stack).unwrap();
+                block.exec(stack, variables).unwrap();
             },
             _ => return Err(format!("Invalid syntax")),
         }
+    }
+    Ok(())
+}
+
+pub fn assign(stack: &mut stack::Stack, variables: &mut variables::Variables) -> Result<(), String> {
+    let value = stack.pop().unwrap();
+    let name = stack.pop().unwrap();
+    match name {
+        Value::Symbol(name) => {
+            variables.set(&name, value);
+        },
+        _ => return Err(format!("Invalid syntax not a symbol")),
     }
     Ok(())
 }

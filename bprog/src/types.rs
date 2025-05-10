@@ -1,6 +1,6 @@
-use std::{fmt::Display, ops::{Add, Div, Mul, Not, Sub}, string};
+use std::{fmt::Display, ops::{Add, Div, Mul, Not, Sub}};
 
-use crate::operations::{self, arithmetic, io, logic};
+use crate::{operations::{self, arithmetic, io, logic}, variables::{self, Variables}};
 use crate::stack::Stack;
 
 #[derive(Debug, Clone)]
@@ -15,6 +15,22 @@ pub enum Value {
 }
 
 impl Value {
+    pub fn to_string_with_variables(&self, vars: &Variables) -> String {
+        match self {
+            Value::List(list) => {
+                let resolved = list.iter().map(|v| {
+                    if let Some(val) = vars.get(&v.to_string()) {
+                        val.to_string()
+                    } else {
+                        v.to_string()
+                    }
+                }).collect::<Vec<_>>();
+                format!("[ {} ]", resolved.join(" "))
+            },
+            _ => self.to_string(), // fall back to Display
+        }
+    }
+
     pub fn and(self, other: Self) -> Result<Value, String> {
         match (self, other) {
             (Value::Boolean(a), Value::Boolean(b)) => Ok(Value::Boolean(a && b)),
@@ -109,12 +125,16 @@ impl Value {
     }
 
 
-
-    pub fn exec(&self, stack: &mut Stack) -> Result<(), String> {
+    // This function will exeute a code block
+    pub fn exec(&self, stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String> {
         match self {
             Value::Block(b) => {
                 let mut tokens = b.iter();
                 while let Some(token) = tokens.next() {
+                    if variables.get(&token.to_string()).is_some() {        // If the token is in variables
+                        stack.push(variables.get(&token.to_string()).unwrap().clone());        // push the value
+                        continue;        // and continue
+                    }
                     match token.as_str() {
                         "+" => {
                             arithmetic::add(stack)?;
@@ -153,7 +173,7 @@ impl Value {
                             Self::words(stack)?;
                         },
                         "print" => {
-                            io::print(stack)?;
+                            io::print(stack, variables)?;
                         },
                         "read" => {
                             io::read(stack)?;
@@ -208,25 +228,28 @@ impl Value {
                             operations::lists::append(stack)?;
                         },
                         "if" => {
-                            operations::flow::if_block(&mut tokens, stack)?;
+                            operations::flow::if_block(&mut tokens, stack, variables)?;
                         },
                         "println" => {
-                            io::println(stack)?;
+                            io::println(stack, variables)?;
                         },
                         "each" => {
-                            operations::lists::each(&mut tokens, stack)?;
+                            operations::lists::each(&mut tokens, stack, variables)?;
                         },
                         "map" => {
-                            operations::lists::map(&mut tokens, stack)?;
+                            operations::lists::map(&mut tokens, stack, variables)?;
                         },
                         "foldl" => {
-                            operations::lists::foldl(&mut tokens, stack)?;
+                            operations::lists::foldl(&mut tokens, stack, variables)?;
                         },
                         "loop" => {
-                            operations::flow::r#loop(&mut tokens, stack)?;
+                            operations::flow::r#loop(&mut tokens, stack, variables)?;
                         },
                         "times" => {
-                            operations::flow::times(&mut tokens, stack)?;
+                            operations::flow::times(&mut tokens, stack, variables)?;
+                        },
+                        ":=" => {
+                            operations::flow::assign(stack, variables)?;
                         },
                         _ => {
                             stack.push(convert(token));
@@ -239,12 +262,12 @@ impl Value {
         }
     }
 
-    pub fn each(self, stack: &mut Stack, block: Self) -> Result<(), String> {
+    pub fn each(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 for item in list {
                     stack.push(item.clone());
-                    block.exec(stack)?;
+                    block.exec(stack, variables)?;
                 }
                 Ok(())
             },
@@ -252,13 +275,13 @@ impl Value {
         }
     }
 
-    pub fn map(self, stack: &mut Stack, block: Self) -> Result<(), String> {
+    pub fn map(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 let mut result = Vec::new();
                 for item in list {
                     stack.push(item.clone());
-                    block.exec(stack).unwrap();
+                    block.exec(stack, variables).unwrap();
                     result.push(stack.pop().unwrap());
                 }
                 stack.push(Value::List(result));
@@ -268,14 +291,14 @@ impl Value {
         }
     }
 
-    pub fn foldl(self, stack: &mut Stack, block: Self, start_value: Self) -> Result<(), String> {
+    pub fn foldl(self, stack: &mut Stack, block: Self, start_value: Self, variables: &mut variables::Variables) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 let mut result = start_value;
                 for item in list {
                     stack.push(result.clone());
                     stack.push(item.clone());
-                    block.exec(stack).unwrap();
+                    block.exec(stack, variables).unwrap();
                     result = stack.pop().unwrap();
                 }
                 stack.push(result);

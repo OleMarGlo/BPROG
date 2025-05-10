@@ -1,16 +1,16 @@
 use std::io;
 
-use crate::{types::Value, stack::Stack};
+use crate::{stack::Stack, types::Value, variables};
 
-pub fn print(stack: &mut Stack) -> Result<(), String> {
+pub fn print(stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String> {
     let value = stack.pop().unwrap();
-    print!("{}", value);
+    print!("{}", value.to_string_with_variables(variables));
     Ok(())
 }
 
-pub fn println(stack: &mut Stack) -> Result<(), String> {
+pub fn println(stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String> {
     let value = stack.pop().unwrap();
-    println!("{}", value);
+    println!("{}", value.to_string_with_variables(variables));
     Ok(())
 }
 
