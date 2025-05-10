@@ -264,7 +264,12 @@ impl Value {
                         }
                     }
                 }
-                Ok(())
+                if stack.len() == 1 {
+                    io::println(stack, variables)?;
+                    Ok(())
+                } else {
+                    Err(format!("Invalid stack size, not enough values on the stack"))
+                }
             }
             _ => Err(format!("Invalid operation")),
         }
