@@ -1,4 +1,4 @@
-use crate::{stack::Stack, types::Value, variables};
+use crate::{functions, stack::Stack, types::Value, variables};
 
 use super::flow::read_block;
 
@@ -56,7 +56,7 @@ pub fn append(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
-pub fn each<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String>
+pub fn each<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -66,10 +66,10 @@ where
             if let Some(token) = iter.next() {
                 if token == "{" {
                     let block = read_block(iter)?;
-                    list.each(stack, block, variables)?;
+                    list.each(stack, block, variables, functions)?;
                     Ok(())
                 } else {
-                    list.each(stack, Value::Block(vec!(token.to_string())), variables)?;
+                    list.each(stack, Value::Block(vec!(token.to_string())), variables, functions)?;
                     Ok(())
                 }
             } else {
@@ -80,7 +80,7 @@ where
     }    
 }
 
-pub fn map<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String>
+pub fn map<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -90,10 +90,10 @@ where
             if let Some(token) = iter.next() {
                 if token == "{" {
                     let block = read_block(iter)?;
-                    list.map(stack, block, variables)?;
+                    list.map(stack, block, variables, functions)?;
                     Ok(())
                 } else {
-                    list.map(stack, Value::Block(vec!(token.to_string())), variables)?;
+                    list.map(stack, Value::Block(vec!(token.to_string())), variables, functions)?;
                     Ok(())
                 }
             } else {
@@ -104,7 +104,7 @@ where
     }    
 }
 
-pub fn foldl<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String>
+pub fn foldl<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
 {
@@ -115,10 +115,10 @@ where
             if let Some(token) = iter.next() {
                 if token == "{" {
                     let block = read_block(iter)?;
-                    list.foldl(stack, block, start_value, variables)?;
+                    list.foldl(stack, block, start_value, variables, functions)?;
                     Ok(())
                 } else {
-                    list.foldl(stack, Value::Block(vec!(token.to_string())), start_value, variables)?;
+                    list.foldl(stack, Value::Block(vec!(token.to_string())), start_value, variables, functions)?;
                     Ok(())
                 }
             } else {

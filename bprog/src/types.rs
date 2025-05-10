@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::{Add, Div, Mul, Not, Sub}};
 
-use crate::{operations::{self, arithmetic, io, logic}, variables::{self, Variables}};
+use crate::{functions, operations::{self, arithmetic, io, logic}, variables::{self, Variables}};
 use crate::stack::Stack;
 
 #[derive(Debug, Clone)]
@@ -126,7 +126,7 @@ impl Value {
 
 
     // This function will exeute a code block
-    pub fn exec(&self, stack: &mut Stack, variables: &mut variables::Variables) -> Result<(), String> {
+    pub fn exec(&self, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String> {
         match self {
             Value::Block(b) => {
                 let mut tokens = b.iter();
@@ -134,6 +134,11 @@ impl Value {
                     if variables.get(&token.to_string()).is_some() {        // If the token is in variables
                         stack.push(variables.get(&token.to_string()).unwrap().clone());        // push the value
                         continue;        // and continue
+                    }
+                    if functions.get(&token.to_string()).is_some() {        // If the token is in functions
+                        let block = functions.get(&token.to_string()).unwrap().clone();        // run the function
+                        block.exec(stack, variables, functions)?;        // and continue
+                        continue;
                     }
                     match token.as_str() {
                         "+" => {
@@ -228,29 +233,32 @@ impl Value {
                             operations::lists::append(stack)?;
                         },
                         "if" => {
-                            operations::flow::if_block(&mut tokens, stack, variables)?;
+                            operations::flow::if_block(&mut tokens, stack, variables, functions)?;
                         },
                         "println" => {
                             io::println(stack, variables)?;
                         },
                         "each" => {
-                            operations::lists::each(&mut tokens, stack, variables)?;
+                            operations::lists::each(&mut tokens, stack, variables, functions)?;
                         },
                         "map" => {
-                            operations::lists::map(&mut tokens, stack, variables)?;
+                            operations::lists::map(&mut tokens, stack, variables, functions)?;
                         },
                         "foldl" => {
-                            operations::lists::foldl(&mut tokens, stack, variables)?;
+                            operations::lists::foldl(&mut tokens, stack, variables, functions)?;
                         },
                         "loop" => {
-                            operations::flow::r#loop(&mut tokens, stack, variables)?;
+                            operations::flow::r#loop(&mut tokens, stack, variables, functions)?;
                         },
                         "times" => {
-                            operations::flow::times(&mut tokens, stack, variables)?;
+                            operations::flow::times(&mut tokens, stack, variables, functions)?;
                         },
                         ":=" => {
                             operations::flow::assign(stack, variables)?;
                         },
+                        "fun" => {
+                            operations::flow::new_function(stack, functions)?;
+                        }
                         _ => {
                             stack.push(convert(token));
                         }
@@ -262,12 +270,12 @@ impl Value {
         }
     }
 
-    pub fn each(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables) -> Result<(), String> {
+    pub fn each(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 for item in list {
                     stack.push(item.clone());
-                    block.exec(stack, variables)?;
+                    block.exec(stack, variables, functions)?;
                 }
                 Ok(())
             },
@@ -275,13 +283,13 @@ impl Value {
         }
     }
 
-    pub fn map(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables) -> Result<(), String> {
+    pub fn map(self, stack: &mut Stack, block: Self, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 let mut result = Vec::new();
                 for item in list {
                     stack.push(item.clone());
-                    block.exec(stack, variables).unwrap();
+                    block.exec(stack, variables, functions).unwrap();
                     result.push(stack.pop().unwrap());
                 }
                 stack.push(Value::List(result));
@@ -291,14 +299,14 @@ impl Value {
         }
     }
 
-    pub fn foldl(self, stack: &mut Stack, block: Self, start_value: Self, variables: &mut variables::Variables) -> Result<(), String> {
+    pub fn foldl(self, stack: &mut Stack, block: Self, start_value: Self, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String> {
         match (self, &block) {
             (Value::List(list), Value::Block(_)) => {
                 let mut result = start_value;
                 for item in list {
                     stack.push(result.clone());
                     stack.push(item.clone());
-                    block.exec(stack, variables).unwrap();
+                    block.exec(stack, variables, functions).unwrap();
                     result = stack.pop().unwrap();
                 }
                 stack.push(result);
