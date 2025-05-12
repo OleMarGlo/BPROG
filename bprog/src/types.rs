@@ -109,7 +109,7 @@ impl Value {
     }
 
     pub fn words(stack: &mut Stack) -> Result<(), String> {
-        let input = stack.pop().unwrap();
+        let input = stack.pop()?;
         let mut words = Vec::new();
         match input {
             Value::String(input) => {
@@ -184,13 +184,13 @@ impl Value {
                             io::read(stack)?;
                         },
                         "parseInteger" => {
-                            let input = stack.pop().unwrap();
-                            Self::parse_integer(&input.to_string()).unwrap();
+                            let input = stack.pop()?;
+                            Self::parse_integer(&input.to_string())?;
                             stack.push(input);
                         },
                         "parseFloat" => {
-                            let input = stack.pop().unwrap();
-                            Self::parse_float(&input.to_string()).unwrap();
+                            let input = stack.pop()?;
+                            Self::parse_float(&input.to_string())?;
                             stack.push(input);
                         },
                         "&&" => {
@@ -264,12 +264,7 @@ impl Value {
                         }
                     }
                 }
-                if stack.len() == 1 {
-                    io::println(stack, variables)?;
-                    Ok(())
-                } else {
-                    Err(format!("Invalid stack size, not enough values on the stack"))
-                }
+                Ok(())
             }
             _ => Err(format!("Invalid operation")),
         }
@@ -294,8 +289,8 @@ impl Value {
                 let mut result = Vec::new();
                 for item in list {
                     stack.push(item.clone());
-                    block.exec(stack, variables, functions).unwrap();
-                    result.push(stack.pop().unwrap());
+                    block.exec(stack, variables, functions)?;
+                    result.push(stack.pop()?);
                 }
                 stack.push(Value::List(result));
                 Ok(())
@@ -311,8 +306,8 @@ impl Value {
                 for item in list {
                     stack.push(result.clone());
                     stack.push(item.clone());
-                    block.exec(stack, variables, functions).unwrap();
-                    result = stack.pop().unwrap();
+                    block.exec(stack, variables, functions)?;
+                    result = stack.pop()?;
                 }
                 stack.push(result);
                 Ok(())

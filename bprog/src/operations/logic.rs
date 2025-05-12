@@ -1,21 +1,21 @@
 use crate::stack::Stack;
 
 pub fn and(stack: &mut Stack) -> Result<(), String> {
-    let b = stack.pop().unwrap();
-    let a = stack.pop().unwrap();
-    stack.push(a.and(b).unwrap());
+    let b = stack.pop()?;
+    let a = stack.pop()?;
+    stack.push(a.and(b)?);
     Ok(())
 }
 
 pub fn or(stack: &mut Stack) -> Result<(), String> {
-    let b = stack.pop().unwrap();
-    let a = stack.pop().unwrap();
-    stack.push(a.or(b).unwrap());
+    let b = stack.pop()?;
+    let a = stack.pop()?;
+    stack.push(a.or(b)?);
     Ok(())
 }
 
 pub fn not(stack: &mut Stack) -> Result<(), String> {
-    let a = stack.pop().unwrap();
+    let a = stack.pop()?;
     stack.push(!a);
     Ok(())
 }

@@ -3,36 +3,36 @@ use crate::{functions, stack::Stack, types::Value, variables};
 use super::flow::read_block;
 
 pub fn head(stack: &mut Stack) -> Result<(), String> {
-    let top = stack.pop().unwrap();
-    let value = Value::head(&top).unwrap();
+    let top = stack.pop()?;
+    let value = Value::head(&top)?;
     stack.push(value);
     Ok(())
 }
 
 pub fn tail(stack: &mut Stack) -> Result<(), String> {
-    let top = stack.pop().unwrap();
-    let value = Value::tail(&top).unwrap();
+    let top = stack.pop()?;
+    let value = Value::tail(&top)?;
     stack.push(value);
     Ok(())
 }
 
 pub fn empty(stack: &mut Stack) -> Result<(), String> {
-    let top = stack.pop().unwrap();
-    let value = Value::empty(&top).unwrap();
+    let top = stack.pop()?;
+    let value = Value::empty(&top)?;
     stack.push(value);
     Ok(())
 }
 
 pub fn lenght(stack: &mut Stack) -> Result<(), String> {
-    let top = stack.pop().unwrap();
-    let value = Value::lenght(&top).unwrap();
+    let top = stack.pop()?;
+    let value = Value::lenght(&top)?;
     stack.push(value);
     Ok(())
 }
 
 pub fn cons(stack: &mut Stack) -> Result<(), String> {
-    let b = stack.pop().unwrap();
-    let value = stack.pop().unwrap();
+    let b = stack.pop()?;
+    let value = stack.pop()?;
     match b {
         Value::List(mut list) => {
             Value::cons(&mut list, value)?;
@@ -44,8 +44,8 @@ pub fn cons(stack: &mut Stack) -> Result<(), String> {
 }
 
 pub fn append(stack: &mut Stack) -> Result<(), String> {
-    let b = stack.pop().unwrap();
-    let a = stack.pop().unwrap();
+    let b = stack.pop()?;
+    let a = stack.pop()?;
     match (a, b) {
         (Value::List(mut a), Value::List(b)) => {
             Value::append(&mut a, b)?;
@@ -60,7 +60,7 @@ pub fn each<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::V
 where
     I: Iterator<Item = &'a String>,
 {
-    let list = stack.pop().unwrap();
+    let list = stack.pop()?;
     match list {
         Value::List(_) => {
             if let Some(token) = iter.next() {
@@ -84,7 +84,7 @@ pub fn map<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Va
 where
     I: Iterator<Item = &'a String>,
 {
-    let list = stack.pop().unwrap();
+    let list = stack.pop()?;
     match list {
         Value::List(_) => {
             if let Some(token) = iter.next() {
@@ -108,8 +108,8 @@ pub fn foldl<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::
 where
     I: Iterator<Item = &'a String>,
 {
-    let start_value = stack.pop().unwrap();
-    let list = stack.pop().unwrap();
+    let start_value = stack.pop()?;
+    let list = stack.pop()?;
     match list {
         Value::List(_) => {
             if let Some(token) = iter.next() {

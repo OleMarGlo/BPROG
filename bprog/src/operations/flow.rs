@@ -93,7 +93,7 @@ where
     };
 
     let block_to_run = if condition { block_true } else { block_false };
-    block_to_run.exec(stack, variables, functions).unwrap();
+    block_to_run.exec(stack, variables, functions)?;
     Ok(())
 }
 
@@ -108,13 +108,13 @@ where
         } else {
             block = Value::Block(vec!(token.to_string()));
         }
-        let times = stack.pop().unwrap();
+        let times = stack.pop()?;
         let mut times = match times {
             Value::Int(value) => value,
             _ => return Err(format!("Invalid syntax not an integer")),
         };
         loop {
-            block.exec(stack, variables, functions).unwrap();
+            block.exec(stack, variables, functions)?;
             times -= 1;
             if times == 0 {
                 break;
@@ -151,11 +151,11 @@ where
         return Err(format!("Invalid syntax"));
     }
     loop {
-        check.exec(stack, variables, functions).unwrap();
-        match stack.pop().unwrap() {
+        check.exec(stack, variables, functions)?;
+        match stack.pop()? {
             Value::Boolean(true) => { break },
             Value::Boolean(false) => {
-                block.exec(stack, variables, functions).unwrap();
+                block.exec(stack, variables, functions)?;
             },
             _ => return Err(format!("Invalid syntax")),
         }
@@ -164,8 +164,8 @@ where
 }
 
 pub fn assign(stack: &mut stack::Stack, variables: &mut variables::Variables) -> Result<(), String> {
-    let value = stack.pop().unwrap();
-    let name = stack.pop().unwrap();
+    let value = stack.pop()?;
+    let name = stack.pop()?;
     match name {
         Value::Symbol(name) => {
             variables.set(&name, value);
@@ -176,8 +176,8 @@ pub fn assign(stack: &mut stack::Stack, variables: &mut variables::Variables) ->
 }
 
 pub fn new_function(stack: &mut stack::Stack, functions: &mut functions::Functions) -> Result<(), String> {
-    let block = stack.pop().unwrap();
-    let name = stack.pop().unwrap();
+    let block = stack.pop()?;
+    let name = stack.pop()?;
     match name {
         Value::Symbol(name) => {
             functions.set(&name, block);

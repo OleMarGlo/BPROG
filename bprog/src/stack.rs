@@ -27,14 +27,14 @@ impl Stack {
     }
 
     pub fn swap(&mut self) -> Result<(), String> {
-        let a = self.stack.pop().unwrap();
-        let b = self.stack.pop().unwrap();
+        let a = self.pop()?;
+        let b = self.pop()?;
         self.stack.push(a);
         self.stack.push(b);
         Ok(())
     }
     pub fn dup(&mut self) -> Result<(), String> {
-        let top = self.stack.pop().unwrap();
+        let top = self.pop()?;
         self.stack.push(top.clone());
         self.stack.push(top);
         Ok(())
