@@ -1,7 +1,17 @@
+/**
+ * This module contains functions that perform list operations.
+ * It contains functions for getting the head, tail, empty, length, and appending lists.
+ */
+
 use crate::{functions, stack::Stack, types::Value, variables};
 
 use super::flow::read_block;
 
+/**
+ * This function returns the first element of a list or string.
+ * It takes a stack and a variables object as arguments.
+ * If the value is not a list or string, it will return an error.
+ */
 pub fn head(stack: &mut Stack) -> Result<(), String> {
     let top = stack.pop()?;
     let value = Value::head(&top)?;
@@ -9,6 +19,11 @@ pub fn head(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function returns the tail of a list or string.
+ * It takes a stack and a variables object as arguments.
+ * If the value is not a list or string, it will return an error.
+ */
 pub fn tail(stack: &mut Stack) -> Result<(), String> {
     let top = stack.pop()?;
     let value = Value::tail(&top)?;
@@ -16,6 +31,11 @@ pub fn tail(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function returns true if the value is empty, false otherwise.
+ * It takes a stack and a variables object as arguments.
+ * If the value is not a list or string, it will return an error.
+ */
 pub fn empty(stack: &mut Stack) -> Result<(), String> {
     let top = stack.pop()?;
     let value = Value::empty(&top)?;
@@ -23,6 +43,11 @@ pub fn empty(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function returns the length of a list or string.
+ * It takes a stack and a variables object as arguments.
+ * If the value is not a list or string, it will return an error.
+ */
 pub fn lenght(stack: &mut Stack) -> Result<(), String> {
     let top = stack.pop()?;
     let value = Value::lenght(&top)?;
@@ -30,6 +55,11 @@ pub fn lenght(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function adds a value to the beginning of a list.
+ * It takes a stack and a variables object as arguments.
+ * If the value is not a list, it will return an error.
+ */
 pub fn cons(stack: &mut Stack) -> Result<(), String> {
     let b = stack.pop()?;
     let value = stack.pop()?;
@@ -43,6 +73,11 @@ pub fn cons(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function appends one list to another.
+ * It takes a stack and a variables object as arguments.
+ * If the values are not lists, it will return an error.
+ */
 pub fn append(stack: &mut Stack) -> Result<(), String> {
     let b = stack.pop()?;
     let a = stack.pop()?;
@@ -56,6 +91,12 @@ pub fn append(stack: &mut Stack) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function executes a block for each element in a list.
+ * It takes a stack, a block, a variables object, and a functions object as arguments.
+ * As the each can be given a code block after itself it has to be called with an iterator.
+ * If the value is not a list or block, it will return an error.
+ */
 pub fn each<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
@@ -80,6 +121,12 @@ where
     }    
 }
 
+/**
+ * This function applies a block to each element in a list and returns a new list with the results.
+ * It takes a stack, a block, a variables object, and a functions object as arguments.
+ * As the map can be given a code block after itself it has to be called with an iterator.
+ * If the value is not a list or block, it will return an error.
+ */
 pub fn map<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,
@@ -104,6 +151,12 @@ where
     }    
 }
 
+/**
+ * This function applies a block to each element in a list and returns a single value by folding the elements from left to right.
+ * It takes a stack, a block, a start value, a variables object, and a functions object as arguments.
+ * As the foldl can be given a code block after itself it has to be called with an iterator.
+ * If the value is not a list or block, it will return an error.
+ */
 pub fn foldl<'a, I>(iter: &mut I, stack: &mut Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String>
 where
     I: Iterator<Item = &'a String>,

@@ -1,3 +1,7 @@
+/**
+ * This module contains functions that perform arithmetic operations on values.
+ * It contains functions for addition, subtraction, multiplication, division, and integer division.
+ */
 
 use crate::{types::Value, stack::Stack};
 

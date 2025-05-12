@@ -2,6 +2,10 @@ use std::fmt::Display;
 
 use crate::types::Value;
 
+/**
+ * Since rust does not have a built-in stack data structure, we need to implement our own.
+ * The Stack struct is a wrapper around a vector of Value.
+ */
 #[derive(Debug)]
 pub struct Stack {
     stack: Vec<Value>,
@@ -26,6 +30,11 @@ impl Stack {
         self.stack.pop().ok_or("Stack is empty".to_string())
     }
 
+
+    /**
+     * This function swaps the top two elements on the stack.
+     * If the stack is empty, it will return an error.
+     */
     pub fn swap(&mut self) -> Result<(), String> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -33,6 +42,11 @@ impl Stack {
         self.stack.push(b);
         Ok(())
     }
+
+    /**
+     * This function duplicates the top element on the stack.
+     * If the stack is empty, it will return an error.
+     */
     pub fn dup(&mut self) -> Result<(), String> {
         let top = self.pop()?;
         self.stack.push(top.clone());
@@ -41,6 +55,7 @@ impl Stack {
     }
 }
 
+// Implement Display trait for Stack to print the stack
 impl Display for Stack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let inner = self.stack.iter()
