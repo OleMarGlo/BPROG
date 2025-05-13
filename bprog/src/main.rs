@@ -17,7 +17,7 @@ fn main() -> Result<(), String> {
     let mut stack = stack::Stack::new();
 
     // if there is an argument it SHOULD be a file name
-    if args.len() == 1 {
+    if args.len() > 1 {
         if let Ok(text) = fs::read_to_string(&args[1]) {
             let replaced = text.replace("\n", " ");      // replace newlines with spaces for easier parsing
             let block = Value::Block(replaced.split_whitespace().map(|s| s.to_string()).collect());
@@ -30,7 +30,7 @@ fn main() -> Result<(), String> {
                 panic!("Invalid stack size, on exit only one value should be on the stack, but {} are on the stack", stack);
             }
         }
-    } else if args.len() == 0 {
+    } else if args.len() == 1 {
         loop {      // loop untill program is terminated
             let mut buf = String::new();
             io::stdin().read_line(&mut buf).unwrap();
@@ -41,7 +41,7 @@ fn main() -> Result<(), String> {
             }
         }
     } else {
-        panic!("Invalid number of arguments");
+        panic!("Invalid number of arguments, expected 0 or 1");
     }
     Ok(())
 }
