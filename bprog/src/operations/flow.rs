@@ -216,6 +216,12 @@ pub fn assign(stack: &mut stack::Stack, variables: &mut variables::Variables) ->
     Ok(())
 }
 
+pub fn exec(stack: &mut stack::Stack, variables: &mut variables::Variables, functions: &mut functions::Functions) -> Result<(), String> {
+    let block = stack.pop()?;
+    block.exec(stack, variables, functions)?;
+    Ok(())
+}
+
 /**
  * This function creates a new function.
  * It takes a stack, a variables object, and a functions object as arguments.

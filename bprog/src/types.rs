@@ -322,6 +322,9 @@ impl Value {
                         "fun" => {
                             operations::flow::new_function(stack, functions)?;
                         }
+                        "exec" => {
+                            operations::flow::exec(stack, variables, functions)?;
+                        }
                         _ => {
                             stack.push(convert(token));
                         }
