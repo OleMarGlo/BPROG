@@ -1,93 +1,134 @@
-# lab12
+# BPROG
 
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.gvk.idi.ntnu.no/course/prog2006/prog2006-2025-workspace/olemgl/lab12.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.gvk.idi.ntnu.no/course/prog2006/prog2006-2025-workspace/olemgl/lab12/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
 
 ## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+A simple stack based interpreter written in Rust. It is a simple language that can be used to perform basic arithmetic operations, if statements, loops, functions and variable assignments.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Features
+- Integer and float arithmetic
+- Boolean logic
+- If statements
+- Loops
+- Functions
+- Variable assignments
+- Reading and printing values
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Syntax
+Because of the interpreter using words you have to make sure everything is separated by spaces. The interpreter will not accept anything that is not separated by spaces and will run them as one word. For a list it would look like this: `[ 1 2 3 ]`. same goes for blocks: `{ 1 2 3 }` and strings: `" hello world "`.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+The intepreter only supports reverse polish notation (INFIX notation) for now. The syntax is as follows:
+```
+<expression> ::= <term> | <term> <operator> <expression>
+<term> ::= <factor> | <factor> <operator> <term>
+<factor> ::= <number> | <boolean> | <string> | <list> | <block> | <symbol>
+<operator> ::= + | - | * | / | div | < | > | == | && | || | not
+<number> ::= <integer> | <float>
+<boolean> ::= true | false
+<string> ::= " <character>* "
+<list> ::= [ <expression>* ]
+<block> ::= { <expression>* }
+<symbol> ::= <identifier>
+```
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Functions
+As this can be looked a little like haskell we also have the following list functions:
+```
+words = splits a strong by spaces
+head = returns the first element of a list
+tail = returns the tail of a list
+empty = returns true if the list is empty
+length = returns the length of a list
+cons = adds an element to the beginning of a list
+append = appends two lists
+foldl = folds a list from left to right
+map = maps a list
+each = executes a block for each element in a list
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### Arithmetic
+There are two types of arithmetic, integer and float. As it is strictly typed, you can only use integers for integer arithmetic and floats for float arithmetic. And they can not be mixed
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+For example if you wish to add two numbers, you can write  `1 2 +`.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### Boolean logic
+There are two types of booleans, true and false. You can use them to perform boolean logic. For example if you want to check if a number is greater than another number you can write `1 2 >`. 
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### if statements
+If statements can be written as `<condition> if { <expression>* } { <expression>* }`. If the condition is true the first block will be executed, if the condition is false the second block will be executed, for example `10 5 5 == if { 10 + } { 100 + }` will print `20`. It also supports literals instead of a block, however it HAS to be only one symbol.
 
-## License
-For open source projects, say how it is licensed.
+### Assignments
+Assignments can be written as `symbol expression :=`. The symbol can be any identifier, and the expression can be any expression.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Functions
+Functions can be written as `symbol { <expression>* } fun `. They do not have to be defined before they are used, but they can only be used after they are defined.
+
+### loops
+
+Loops can either be written as `ammount times { <expression>* }` or `loop { <condition> } { <expression>* }`. Same as if statements, the condition can also be a code block or a literal.
+
+### Stack operations
+The stack can be manipulated using the following operations:
+```
+swap = swaps the top two elements on the stack
+dup = duplicates the top element on the stack
+pop = removes the top element from the stack
+```
+
+### Errors
+Errors are handled by returning an error message. Specifically using the Result type. In REPL mode, the program will print the error message and continue running. In file mode, the program will stop and print the error message. Additionally if the stack does not have specifically 1 value on it, it will return an error in file mode.
+
+### Running the program
+By default the program will run in REPL mode, but you can also run it in file mode by passing the file name as an argument. REPL mode will print the stack after each expression is executed, while file will print out the last value on the stack IF it is has only one value on it.
+To run the program, simply clone the repository and run the `main.rs` file like this:
+```
+cargo run -- file.txt
+```
+or to run it in REPL mode:
+```
+cargo run
+```
+
+You have to have the [Rust compiler](https://www.rust-lang.org/tools/install) installed to run the program. <br>
+
+## Examples
+
+### REPL
+```
+> 1 2 +
+[3]
+
+> 1 2 * 3 +
+[5]
+
+> 1 2 * 3 + 4 5 div -
+[4]
+
+> 1 2 * 3 + 4 5 6 div - swap dup + swap pop
+[10]
+
+> true if { println " true " } { println " false " }
+true
+
+> 1 loop { dup 4 > } { dup 1 + } [ ] 5 times { cons }
+[[ 1 2 3 4 5 ]]
+
+> 1 loop { dup 4 > } { dup 1 + } [ ] 5 times   cons  
+[[ 1 2 3 4 5 ]]
+
+> odd { dup 2 div swap 2 / == if false True } fun 
+> 2 odd
+[false]
+
+> 3 odd
+[true]
+
+> age 20 := [ 10 age ] println
+[[10 20]]
+
+> read
+This is a message from the user
+> words println
+[ " This " " is " " a " " message " " from " " the " " user " ]
